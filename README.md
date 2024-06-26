@@ -8,7 +8,9 @@ A Homey application designed to collect data from sensor devices connected to a 
 
 Before running the application, ensure you have the following installed:
 
-- [Homey CLI](https://github.com/athombv/homey-cli)
+- Homey CLI
+  ```bash
+  npm install --global --no-optional homey
 - [Docker](https://www.docker.com/)
 
 ## Installation
