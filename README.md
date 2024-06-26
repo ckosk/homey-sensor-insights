@@ -18,8 +18,9 @@ Before running the application, ensure you have the following installed:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-repo/here
-   cd example-homey
+   git clone https://github.com/ckosk/homey-sensor-insights.git
+   cd homey-sensor-insights
+
    
 2. **Install dependencies:**
 
