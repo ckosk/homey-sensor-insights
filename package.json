@@ -1,0 +1,13 @@
+{
+  "name": "com.company.myapp",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {},
+  "devDependencies": {
+    "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.6"
+  },
+  "dependencies": {
+    "fetch": "^1.1.0",
+    "homey-api": "^3.4.35"
+  }
+}
