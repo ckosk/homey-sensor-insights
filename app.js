@@ -4,7 +4,7 @@ const { HomeyAPI } = require("homey-api");
 const fetch = require("node-fetch");
 
 class MyApp extends Homey.App {
-  values = { data: {}, timestamp: "" };
+  values = { "data": {}, "timestamp": "", "location": {} };
 
   async getData() {
     try {
@@ -12,8 +12,11 @@ class MyApp extends Homey.App {
       this.values.data = {};
       // Add current date/time
       this.values.timestamp = new Date().toISOString();
+      // Add location data. App must have the 'homey:manager:geolocation' permission! (Set in .homeycompose\app.json)
+      this.values.location.latitude = this.homey.geolocation.getLatitude();
+      this.values.location.longitude = this.homey.geolocation.getLongitude();
 
-      // Create a HomeyAPI instance. App must have the `homey:manager:api` permission! (Set in .homeycompose\app.json)
+      // Create a HomeyAPI instance. App must have the 'homey:manager:api' permission! (Set in .homeycompose\app.json)
       this.homeyApi = await HomeyAPI.createAppAPI({
         homey: this.homey,
       });
@@ -27,7 +30,7 @@ class MyApp extends Homey.App {
         // If device is a sensor (class) | Sensors in class include Temp/Humidity, Motion, and Door/Window
         if (device.class === "sensor") {
           //this.log(`=== ${device.name} ===`);
-          let deviceData = { capabilities: {} };
+          let deviceData = { "capabilities": {} };
           for (const capability of Object.values(device.capabilitiesObj)) {
             //this.log(`${capability.title}: ${capability.value}`);
             deviceData.capabilities[capability.title] = capability.value;
@@ -38,22 +41,22 @@ class MyApp extends Homey.App {
       // Print JSON object
       this.log(JSON.stringify(this.values, null, 2));
       //this.log(JSON.stringify(this.values.data["Motion Sensor P1"].capabilities["Motion alarm"]))
+      //this.log(`Latitude: ${this.values.location.latitude}`);
       // Testing POST
-      const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
-        method: "POST",
+      const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
         body: JSON.stringify(this.values, null, 2),
         headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        }});
       if (!res.ok) {
         throw new Error(res.statusText);
       }
       const body = await res.json();
       //this.log(body);
     } catch (error) {
-      this.log("Error in getData: ", error.message);
+      this.log('Error in getData: ', error.message);
     }
   }
 
@@ -65,9 +68,7 @@ class MyApp extends Homey.App {
 
     // Run getData() every minute
     setInterval(() => {
-      this.getData().catch((error) =>
-        this.log("Error in interval getData:", error.message)
-      );
+      this.getData().catch(error => this.log('Error in interval getData:', error.message));
     }, 60000); // 1 minute
   }
 }

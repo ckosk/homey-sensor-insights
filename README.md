@@ -20,7 +20,6 @@ Before running the application, ensure you have the following installed:
    ```bash
    git clone https://github.com/ckosk/homey-sensor-insights.git
    cd homey-sensor-insights
-
    
 2. **Install dependencies:**
 
