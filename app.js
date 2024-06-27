@@ -4,7 +4,7 @@ const { HomeyAPI } = require("homey-api");
 const fetch = require("node-fetch");
 
 class MyApp extends Homey.App {
-  values = { "data": {}, "timestamp": "", "location": {} };
+  values = { "data": {}, "timestamp": "", "location": {}, "homeyId": "" };
 
   async getData() {
     try {
@@ -20,6 +20,10 @@ class MyApp extends Homey.App {
       this.homeyApi = await HomeyAPI.createAppAPI({
         homey: this.homey,
       });
+
+      // Get Homey device ID
+      const systemInfo = await this.homeyApi.system.getInfo();
+      this.values.homeyId = systemInfo.cloudId;
 
       // Get all devices
       const devices = await this.homeyApi.devices.getDevices();
