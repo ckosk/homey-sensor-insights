@@ -33,10 +33,8 @@ class MyApp extends Homey.App {
         if (!device.capabilitiesObj) continue;
         // If device is a sensor (class) | Sensors in class include Temp/Humidity, Motion, and Door/Window
         if (device.class === "sensor") {
-          //this.log(`=== ${device.name} ===`);
           let deviceData = { "capabilities": {} };
           for (const capability of Object.values(device.capabilitiesObj)) {
-            //this.log(`${capability.title}: ${capability.value}`);
             deviceData.capabilities[capability.title] = capability.value;
           }
           this.values.data[device.name] = deviceData;
@@ -46,6 +44,7 @@ class MyApp extends Homey.App {
       this.log(JSON.stringify(this.values, null, 2));
       //this.log(JSON.stringify(this.values.data["Motion Sensor P1"].capabilities["Motion alarm"]))
       //this.log(`Latitude: ${this.values.location.latitude}`);
+
       // Testing POST
       const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
         method: 'POST',
@@ -55,24 +54,32 @@ class MyApp extends Homey.App {
           'Content-Type': 'application/json',
         }});
       if (!res.ok) {
-        throw new Error(res.statusText);
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
       const body = await res.json();
-      //this.log(body);
+      this.log('POST request successful:', body);
     } catch (error) {
-      this.log('Error in getData: ', error.message);
+      this.log('Error in getData:', error.message);
     }
   }
 
   async onInit() {
-    this.log("Application has been initialized");
-    this.log(this.homey.platform + " Version: " + this.homey.version);
-    // Run getData() initially
-    await this.getData();
+    try {
+      this.log("Application has been initialized");
+      this.log(this.homey.platform + " Version: " + this.homey.version);
+      // Run getData() initially
+      await this.getData();
+    } catch (error) {
+      this.log('Error in onInit:', error.message);
+    }
 
     // Run getData() every minute
-    setInterval(() => {
-      this.getData().catch(error => this.log('Error in interval getData:', error.message));
+    setInterval(async () => {
+      try {
+        await this.getData();
+      } catch (error) {
+        this.log('Error in interval getData:', error.message);
+      }
     }, 60000); // 1 minute
   }
 }
