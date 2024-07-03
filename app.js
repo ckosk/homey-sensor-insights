@@ -5,6 +5,7 @@ const fetch = require("node-fetch");
 
 class MyApp extends Homey.App {
   values = { "data": {}, "timestamp": "", "location": {}, "homeyId": "" };
+  doorWindowID = [];
 
   async getData() {
     try {
@@ -36,12 +37,18 @@ class MyApp extends Homey.App {
           let deviceData = { "capabilities": {} };
           for (const capability of Object.values(device.capabilitiesObj)) {
             deviceData.capabilities[capability.title] = capability.value;
+            
+            // Find devices with 'alarm_contact' capability. Set up listeners.
+            if (capability.title == 'Contact alarm' && !this.doorWindowID.includes(device.id)) {
+              this.log(`Found NEW device with 'alarm_contact' capability. Device ID: ${device.id}`);
+              this.setupListener(device.id);
+              this.doorWindowID.push(device.id); // Store device ID in array
+            }
           }
           this.values.data[device.name] = deviceData;
         }
       }
-      // Print JSON object
-      this.log(JSON.stringify(this.values, null, 2));
+      // Temp
       //this.log(JSON.stringify(this.values.data["Motion Sensor P1"].capabilities["Motion alarm"]))
       //this.log(`Latitude: ${this.values.location.latitude}`);
 
@@ -54,13 +61,11 @@ class MyApp extends Homey.App {
           'Content-Type': 'application/json',
         }});
       if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
+        throw new Error(`HTTP error! status: ${res.status}`);}
       const body = await res.json();
-      this.log('POST request successful:', body);
+      this.log('POST request successful:', JSON.stringify(body, null, 2));
     } catch (error) {
-      this.log('Error in getData:', error.message);
-    }
+      this.log('Error in getData:', error.message);}
   }
 
   async onInit() {
@@ -72,15 +77,32 @@ class MyApp extends Homey.App {
     } catch (error) {
       this.log('Error in onInit:', error.message);
     }
-
-    // Run getData() every minute
+    // Run getData() every 5 minutes
     setInterval(async () => {
       try {
         await this.getData();
       } catch (error) {
         this.log('Error in interval getData:', error.message);
       }
-    }, 60000); // 1 minute
+    }, 300000); // 5 minute
+  }
+
+  async setupListener(doorWindowID) {
+    try {
+      const device = await this.homeyApi.devices.getDevice({
+        id: doorWindowID,
+      });
+      const listener = device.makeCapabilityInstance(
+        "alarm_contact",
+        async (value) => {
+          this.log(`Contact Alarm (${device.id}): ${value}`);
+          if (value) {await this.getData();}
+        });
+    } catch (error) {
+      this.log(
+        `Error setting up listener for device ID ${doorWindowID}: ${error.message}`
+      );
+    }
   }
 }
 
