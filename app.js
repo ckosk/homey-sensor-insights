@@ -9,7 +9,7 @@ class MyApp extends Homey.App {
 
   async getData() {
     try {
-      // Clear previous data, if we were to set this on interval
+      // Clear previous data
       this.values.data = {};
       // Add current date/time
       this.values.timestamp = new Date().toISOString();
@@ -34,7 +34,7 @@ class MyApp extends Homey.App {
         if (!device.capabilitiesObj) continue;
         // If device is a sensor (class) | Sensors in class include Temp/Humidity, Motion, and Door/Window
         if (device.class === "sensor") {
-          let deviceData = { "capabilities": {} };
+          let deviceData = { "deviceId": device.id, "capabilities": {} };
           for (const capability of Object.values(device.capabilitiesObj)) {
             deviceData.capabilities[capability.title] = capability.value;
             
@@ -48,10 +48,6 @@ class MyApp extends Homey.App {
           this.values.data[device.name] = deviceData;
         }
       }
-      // Temp
-      //this.log(JSON.stringify(this.values.data["Motion Sensor P1"].capabilities["Motion alarm"]))
-      //this.log(`Latitude: ${this.values.location.latitude}`);
-
       // Testing POST
       const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
         method: 'POST',

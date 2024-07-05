@@ -55,31 +55,48 @@ Upon running, the application will:
 Below is an example of the structured JSON data collected from the sensor devices:
     
     {
-      "data": {
-        "Temperature and Humidity Sensor": {
-          "capabilities": {
-            "Battery alarm": false,
-            "Humidity": 56.1,
-            "Pressure": 996,
-            "Temperature": 75,
-            "Battery": 99
-          }
-        },
-        "Motion Sensor P1": {
-          "capabilities": {
-            "Battery": 100,
-            "Battery alarm": false,
-            "Luminance": 245,
-            "Motion alarm": false
-          }
-        },
-        "Door and Window Sensor": {
-          "capabilities": {
-            "Battery": 100,
-            "Battery alarm": false,
-            "Contact alarm": false
-          }
+    "data": {
+      "Door and Window Sensor": {
+        "deviceId": "381e7dd8-655c-4fa0-a19d-579ec84ea251",
+        "capabilities": {
+          "Contact alarm": true,
+          "Battery alarm": false,
+          "Battery": 100
         }
       },
-      "timestamp": "2024-06-26T18:59:43.361Z"
-    }
+      "Temperature and Humidity Sensor": {
+        "deviceId": "4f184f36-866c-459b-8143-11093bfe66d4",
+        "capabilities": {
+          "Battery": 97,
+          "Temperature": 73,
+          "Pressure": 993,
+          "Humidity": 52.8,
+          "Battery alarm": false
+        }
+      },
+      "Door/Window sensor 2": {
+        "deviceId": "bdb936c8-cea9-4f1f-b8f4-58ac89e099c1",
+        "capabilities": {
+          "Battery": 99,
+          "Contact alarm": false,
+          "Tamper alarm": true,
+          "Temperature": 72
+        }
+      },
+      "Motion Sensor P1": {
+        "deviceId": "f55c871f-e9b7-45a6-814f-79299302f650",
+        "capabilities": {
+          "Motion alarm": true,
+          "Luminance": 276,
+          "Battery alarm": false,
+          "Battery": 100
+        }
+      }
+    },
+    "timestamp": "2024-07-05T17:02:34.064Z",
+    "location": {
+      "latitude": 38.89767,
+      "longitude": -77.03655
+    },
+    "homeyId": "abc123def456"
+  }
