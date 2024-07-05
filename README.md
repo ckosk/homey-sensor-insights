@@ -28,11 +28,13 @@ Before running the application, ensure you have the following installed:
    
 3. **Set Homey App Permissions:**
     
-    Ensure the app has the homey:manager:api permission by configuring the .homeycompose/app.json file:
+    Ensure the app has the homey:manager:api permission as well as the homey:manager:geolocation permission by configuring the .homeycompose/app.json file:
         
    ```bash
    {
-    "permissions": ["homey:manager:api"]
+    "permissions": [
+    "homey:manager:api",
+    "homey:manager:geolocation"]
    }
    
 4. **Build and run the app:**
@@ -47,8 +49,9 @@ Upon running, the application will:
 1. Initialize and log the platform and version information.
 2. Retrieve all devices connected to the Homey system.
 3. Filter devices to include only those classified as sensors (e.g., Temperature/Humidity, Motion, and Door/Window sensors).
-4. Collect data from these sensor devices and structure it into a JSON object.
-5. Send the collected data to the specified endpoint.
+4. Collect data from these sensor devices every 5 minutes and structure it into a JSON object.
+5. Collect data from these sensor devices when a device capability changes and structure it into a JSON object.
+6. Send the collected data to the specified endpoint.
 
 ## Example JSON Data
 

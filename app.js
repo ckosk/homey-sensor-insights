@@ -4,7 +4,7 @@ const { HomeyAPI } = require("homey-api");
 const fetch = require("node-fetch");
 
 class MyApp extends Homey.App {
-  values = { "data": {}, "timestamp": "", "location": {}, "homeyId": "" };
+  values = { data: {}, timestamp: "", location: {}, homeyId: "" };
   doorWindowID = [];
 
   async getData() {
@@ -13,14 +13,9 @@ class MyApp extends Homey.App {
       this.values.data = {};
       // Add current date/time
       this.values.timestamp = new Date().toISOString();
-      // Add location data. App must have the 'homey:manager:geolocation' permission! (Set in .homeycompose\app.json)
+      // Add location data
       this.values.location.latitude = this.homey.geolocation.getLatitude();
       this.values.location.longitude = this.homey.geolocation.getLongitude();
-
-      // Create a HomeyAPI instance. App must have the 'homey:manager:api' permission! (Set in .homeycompose\app.json)
-      this.homeyApi = await HomeyAPI.createAppAPI({
-        homey: this.homey,
-      });
 
       // Get Homey device ID
       const systemInfo = await this.homeyApi.system.getInfo();
@@ -28,18 +23,14 @@ class MyApp extends Homey.App {
 
       // Get all devices
       const devices = await this.homeyApi.devices.getDevices();
-      // Loop devices
+      // Loop through devices and process sensors
       for (const device of Object.values(devices)) {
-        // If device not available, skip
-        if (!device.capabilitiesObj) continue;
-        // If device is a sensor (class) | Sensors in class include Temp/Humidity, Motion, and Door/Window
-        if (device.class === "sensor") {
-          let deviceData = { "deviceId": device.id, "capabilities": {} };
-          for (const capability of Object.values(device.capabilitiesObj)) {
+        if (device.class === "sensor" && device.capabilitiesObj) {
+          let deviceData = { deviceId: device.id, capabilities: {} };
+          for (const [key, capability] of Object.entries(device.capabilitiesObj)) {
             deviceData.capabilities[capability.title] = capability.value;
-            
-            // Find devices with 'alarm_contact' capability. Set up listeners.
-            if (capability.title == 'Contact alarm' && !this.doorWindowID.includes(device.id)) {
+            // Set up listeners for 'alarm_contact' capability
+            if (capability.title === 'Contact alarm' && !this.doorWindowID.includes(device.id)) {
               this.log(`Found NEW device with 'alarm_contact' capability. Device ID: ${device.id}`);
               this.setupListener(device.id);
               this.doorWindowID.push(device.id); // Store device ID in array
@@ -48,6 +39,7 @@ class MyApp extends Homey.App {
           this.values.data[device.name] = deviceData;
         }
       }
+
       // Testing POST
       const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
         method: 'POST',
@@ -55,7 +47,8 @@ class MyApp extends Homey.App {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-        }});
+        },
+      });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);}
       const body = await res.json();
@@ -68,6 +61,10 @@ class MyApp extends Homey.App {
     try {
       this.log("Application has been initialized");
       this.log(this.homey.platform + " Version: " + this.homey.version);
+      // Create HomeyAPI instance once
+      this.homeyApi = await HomeyAPI.createAppAPI({
+        homey: this.homey,
+      });
       // Run getData() initially
       await this.getData();
     } catch (error) {
@@ -80,7 +77,7 @@ class MyApp extends Homey.App {
       } catch (error) {
         this.log('Error in interval getData:', error.message);
       }
-    }, 300000); // 5 minute
+    }, 300000); // 5 minutes
   }
 
   async setupListener(doorWindowID) {
@@ -92,12 +89,9 @@ class MyApp extends Homey.App {
         "alarm_contact",
         async (value) => {
           this.log(`Contact Alarm (${device.id}): ${value}`);
-          if (value) {await this.getData();}
-        });
+          if (value) { await this.getData(); }});
     } catch (error) {
-      this.log(
-        `Error setting up listener for device ID ${doorWindowID}: ${error.message}`
-      );
+      this.log(`Error setting up listener for device ID ${doorWindowID}: ${error.message}`);
     }
   }
 }
