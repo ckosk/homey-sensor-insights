@@ -6,6 +6,7 @@ const fetch = require("node-fetch");
 class MyApp extends Homey.App {
   values = { data: {}, timestamp: "", location: {}, homeyId: "" };
   doorWindowID = [];
+  motionID = [];
 
   async getData() {
     try {
@@ -29,11 +30,22 @@ class MyApp extends Homey.App {
           let deviceData = { deviceId: device.id, capabilities: {} };
           for (const [key, capability] of Object.entries(device.capabilitiesObj)) {
             deviceData.capabilities[capability.title] = capability.value;
-            // Set up listeners for 'alarm_contact' capability
-            if (capability.title === 'Contact alarm' && !this.doorWindowID.includes(device.id)) {
-              this.log(`Found NEW device with 'alarm_contact' capability. Device ID: ${device.id}`);
-              this.setupListener(device.id);
-              this.doorWindowID.push(device.id); // Store device ID in array
+            // Set up listeners for certain capabilities
+            switch (capability.title) {
+              case 'Contact alarm':
+                if (!this.doorWindowID.includes(device.id)) {
+                  this.log(`Found NEW device with 'alarm_contact' capability. Device ID: ${device.id}`);
+                  this.setupDoorWindowListener(device.id);
+                  this.doorWindowID.push(device.id); // Store device ID in array
+                }
+                break;
+              case 'Motion alarm':
+                if (!this.motionID.includes(device.id)) {
+                  this.log(`Found NEW device with 'alarm_motion' capability. Device ID: ${device.id}`);
+                  this.setupMotionListener(device.id);
+                  this.motionID.push(device.id); // Store device ID in array
+                }
+                break;
             }
           }
           this.values.data[device.name] = deviceData;
@@ -57,6 +69,36 @@ class MyApp extends Homey.App {
       this.log('Error in getData:', error.message);}
   }
 
+  // Combine these into a single func?
+  async setupDoorWindowListener(doorWindowID) {
+    try {
+      const device = await this.homeyApi.devices.getDevice({
+        id: doorWindowID,
+      });
+      const listener = device.makeCapabilityInstance(
+        "alarm_contact",
+        async (value) => {
+          this.log(`Contact Alarm (${device.id}): ${value}`);
+          if (value) { await this.getData(); }});
+    } catch (error) {
+      this.log(`Error setting up listener for device ID ${doorWindowID}: ${error.message}`);
+    }
+  }
+  async setupMotionListener(motionID) {
+    try {
+      const device = await this.homeyApi.devices.getDevice({
+        id: motionID,
+      });
+      const listener = device.makeCapabilityInstance(
+        "alarm_motion",
+        async (value) => {
+          this.log(`Motion Alarm (${device.id}): ${value}`);
+          if (value) { await this.getData(); }});
+    } catch (error) {
+      this.log(`Error setting up listener for device ID ${motionID}: ${error.message}`);
+    }
+  }
+
   async onInit() {
     try {
       this.log("Application has been initialized");
@@ -78,21 +120,6 @@ class MyApp extends Homey.App {
         this.log('Error in interval getData:', error.message);
       }
     }, 300000); // 5 minutes
-  }
-
-  async setupListener(doorWindowID) {
-    try {
-      const device = await this.homeyApi.devices.getDevice({
-        id: doorWindowID,
-      });
-      const listener = device.makeCapabilityInstance(
-        "alarm_contact",
-        async (value) => {
-          this.log(`Contact Alarm (${device.id}): ${value}`);
-          if (value) { await this.getData(); }});
-    } catch (error) {
-      this.log(`Error setting up listener for device ID ${doorWindowID}: ${error.message}`);
-    }
   }
 }
 
