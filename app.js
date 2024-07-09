@@ -7,6 +7,7 @@ class MyApp extends Homey.App {
   values = { data: {}, timestamp: "", location: {}, homeyId: "" };
   doorWindowID = [];
   motionID = [];
+  smokeID = [];
 
   async getData() {
     try {
@@ -29,21 +30,28 @@ class MyApp extends Homey.App {
         if (device.class === "sensor" && device.capabilitiesObj) {
           let deviceData = { deviceId: device.id, capabilities: {} };
           for (const [key, capability] of Object.entries(device.capabilitiesObj)) {
-            deviceData.capabilities[capability.title] = capability.value;
+            deviceData.capabilities[capability.id] = capability.value; // was "deviceData.capabilities[capability.title]"
             // Set up listeners for certain capabilities
-            switch (capability.title) {
-              case 'Contact alarm':
+            switch (capability.id) { // was "capability.title"
+              case 'alarm_contact':
                 if (!this.doorWindowID.includes(device.id)) {
                   this.log(`Found NEW device with 'alarm_contact' capability. Device ID: ${device.id}`);
                   this.setupDoorWindowListener(device.id);
                   this.doorWindowID.push(device.id); // Store device ID in array
                 }
                 break;
-              case 'Motion alarm':
+              case 'alarm_motion':
                 if (!this.motionID.includes(device.id)) {
                   this.log(`Found NEW device with 'alarm_motion' capability. Device ID: ${device.id}`);
                   this.setupMotionListener(device.id);
                   this.motionID.push(device.id); // Store device ID in array
+                }
+                break;
+              case 'alarm_smoke':
+                if (!this.smokeID.includes(device.id)) {
+                  this.log(`Found NEW device with 'alarm_smoke' capability. Device ID: ${device.id}`);
+                  this.setupSmokeListener(device.id);
+                  this.smokeID.push(device.id); // Store device ID in array
                 }
                 break;
             }
@@ -96,6 +104,20 @@ class MyApp extends Homey.App {
           if (value) { await this.getData(); }});
     } catch (error) {
       this.log(`Error setting up listener for device ID ${motionID}: ${error.message}`);
+    }
+  }
+  async setupSmokeListener(smokeID) {
+    try {
+      const device = await this.homeyApi.devices.getDevice({
+        id: smokeID,
+      });
+      const listener = device.makeCapabilityInstance(
+        "alarm_smoke",
+        async (value) => {
+          this.log(`Smoke Alarm (${device.id}): ${value}`);
+          if (value) { await this.getData(); }});
+    } catch (error) {
+      this.log(`Error setting up listener for device ID ${smokeID}: ${error.message}`);
     }
   }
 

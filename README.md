@@ -62,44 +62,53 @@ Below is an example of the structured JSON data collected from the sensor device
       "Door and Window Sensor": {
         "deviceId": "381e7dd8-655c-4fa0-a19d-579ec84ea251",
         "capabilities": {
-          "Contact alarm": true,
-          "Battery alarm": false,
-          "Battery": 100
+          "alarm_contact": true,
+          "alarm_battery": false,
+          "measure_battery": 100
         }
       },
       "Temperature and Humidity Sensor": {
         "deviceId": "4f184f36-866c-459b-8143-11093bfe66d4",
         "capabilities": {
-          "Battery": 97,
-          "Temperature": 73,
-          "Pressure": 993,
-          "Humidity": 52.8,
-          "Battery alarm": false
+          "measure_battery": 98,
+          "measure_temperature": 75,
+          "measure_pressure": 992,
+          "measure_humidity": 51.5,
+          "alarm_battery": false
         }
       },
       "Door/Window sensor 2": {
         "deviceId": "bdb936c8-cea9-4f1f-b8f4-58ac89e099c1",
         "capabilities": {
-          "Battery": 99,
-          "Contact alarm": false,
-          "Tamper alarm": true,
-          "Temperature": 72
+          "measure_battery": 100,
+          "alarm_contact": false,
+          "alarm_tamper": true,
+          "measure_temperature": 75
         }
       },
       "Motion Sensor P1": {
         "deviceId": "f55c871f-e9b7-45a6-814f-79299302f650",
         "capabilities": {
-          "Motion alarm": true,
-          "Luminance": 276,
-          "Battery alarm": false,
-          "Battery": 100
+          "alarm_motion": false,
+          "measure_luminance": 411,
+          "alarm_battery": false,
+          "measure_battery": 100
+        }
+      },
+      "Intelligent Smoke Alarm": {
+        "deviceId": "67d93651-d40f-464c-8196-8f8ad4f7a322",
+        "capabilities": {
+          "measure_temperature": 76,
+          "alarm_smoke": false,
+          "alarm_battery": false,
+          "warning_on_off": false
         }
       }
     },
-    "timestamp": "2024-07-05T17:02:34.064Z",
+    "timestamp": "2024-07-09T21:41:45.089Z",
     "location": {
       "latitude": 38.89767,
       "longitude": -77.03655
     },
     "homeyId": "abc123def456"
-  }
+    }
